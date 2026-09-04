@@ -17,7 +17,8 @@ export interface User {
   id: string;
   username: string;
   name: string;
-  role: "admin" | "terapeuta";
+  role: "admin" | "terapeuta" | "paciente";
+  patientId?: string;
   passSalt: string;
   passHash: string;
   createdAt: string;
@@ -27,7 +28,8 @@ interface UserRow {
   id: string;
   username: string;
   name: string;
-  role: "admin" | "terapeuta";
+  role: "admin" | "terapeuta" | "paciente";
+  patient_id: string | null;
   pass_salt: string;
   pass_hash: string;
   created_at: Date;
@@ -39,6 +41,7 @@ function toUser(r: UserRow): User {
     username: r.username,
     name: r.name,
     role: r.role,
+    patientId: r.patient_id ?? undefined,
     passSalt: r.pass_salt,
     passHash: r.pass_hash,
     createdAt: r.created_at.toISOString(),
@@ -49,7 +52,7 @@ function makePassword(salt: string, password: string): string {
   return hashValue(`${salt}:${password}`);
 }
 
-const USER_COLS = `id, username, name, role, pass_salt, pass_hash, created_at`;
+const USER_COLS = `id, username, name, role, patient_id, pass_salt, pass_hash, created_at`;
 
 export async function ensureSeedUsers(): Promise<void> {
   const rows = await query<{ count: string }>("SELECT count(*)::text AS count FROM users");
@@ -96,27 +99,38 @@ export async function verifyCredentials(
 export async function createUser(input: {
   username: string;
   name: string;
-  role: "admin" | "terapeuta";
+  role: "admin" | "terapeuta" | "paciente";
   password: string;
+  patientId?: string;
 }): Promise<User | null> {
   await ensureSeedUsers();
   if (!input.username.trim() || input.password.length < 6) return null;
   if (await findUser(input.username)) return null;
   const salt = randomBytes(8).toString("hex");
+  const validRole = ["admin", "terapeuta", "paciente"].includes(input.role) ? input.role : "terapeuta";
   const row = await queryOne<UserRow>(
-    `INSERT INTO users (id, username, name, role, pass_salt, pass_hash)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO users (id, username, name, role, patient_id, pass_salt, pass_hash)
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING ${USER_COLS}`,
     [
       newId(),
       input.username.trim().toLowerCase(),
       input.name.trim() || input.username.trim(),
-      input.role === "admin" ? "admin" : "terapeuta",
+      validRole,
+      input.patientId ?? null,
       salt,
       makePassword(salt, input.password),
     ]
   );
   return row ? toUser(row) : null;
+}
+
+export async function getUserByPatientId(patientId: string): Promise<User | undefined> {
+  const row = await queryOne<UserRow>(
+    `SELECT ${USER_COLS} FROM users WHERE patient_id = $1`,
+    [patientId]
+  );
+  return row ? toUser(row) : undefined;
 }
 
 export async function deleteUser(id: string): Promise<boolean> {

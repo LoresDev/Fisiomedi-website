@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   addHistoryEntryAction,
+  createPatientAccountAction,
   deleteExamAction,
   deletePatientAction,
+  deletePatientAccountAction,
   uploadExamAction,
 } from "../../../actions";
 import { getAppointments } from "@/lib/appointments";
-import { getExams, getHistory, getPatient } from "@/lib/store";
+import { getExams, getHistory, getPatient, getUserByPatientId } from "@/lib/store";
 
 const input =
   "w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -30,10 +32,11 @@ export default async function FichaPacientePage({
   const patient = await getPatient(id);
   if (!patient) notFound();
 
-  const [history, exams, appointments] = await Promise.all([
+  const [history, exams, appointments, patientAccount] = await Promise.all([
     getHistory(id),
     getExams(id),
     getAppointments(),
+    getUserByPatientId(id),
   ]);
   const patientAppointments = appointments
     .filter((a) => a.patientId === id)
@@ -251,6 +254,73 @@ export default async function FichaPacientePage({
               ))}
             </tbody>
           </table>
+        )}
+      </section>
+
+      {/* Patient account access section */}
+      <section id="cuenta" className="mt-6 rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+        <header className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-slate-900">Cuenta de acceso</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Permite al paciente ver sus citas desde su cuenta</p>
+          </div>
+          {patientAccount && (
+            <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium">Activa</span>
+          )}
+        </header>
+
+        {error === "cuenta" && (
+          <p className="mx-6 mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-700">
+            No se pudo crear la cuenta. Verifica que el usuario no exista ya.
+          </p>
+        )}
+
+        {patientAccount ? (
+          <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-slate-700">
+                Usuario: <strong className="font-mono">{patientAccount.username}</strong>
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">Creada el {new Date(patientAccount.createdAt).toLocaleDateString("es")}</p>
+            </div>
+            <form action={deletePatientAccountAction}>
+              <input type="hidden" name="userId" value={patientAccount.id} />
+              <input type="hidden" name="patientId" value={patient.id} />
+              <button className="rounded-full border border-red-300 px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50">
+                Eliminar cuenta
+              </button>
+            </form>
+          </div>
+        ) : (
+          <form action={createPatientAccountAction} className="px-6 py-5 space-y-4">
+            <input type="hidden" name="patientId" value={patient.id} />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="block">
+                <span className="mb-1 block text-xs text-slate-500">Nombre de usuario *</span>
+                <input
+                  type="text"
+                  name="username"
+                  required
+                  placeholder="Ej: juan.perez"
+                  className={input}
+                />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs text-slate-500">Contraseña inicial *</span>
+                <input
+                  type="text"
+                  name="password"
+                  required
+                  minLength={6}
+                  placeholder="Mínimo 6 caracteres"
+                  className={input}
+                />
+              </label>
+            </div>
+            <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+              Crear cuenta de acceso
+            </button>
+          </form>
         )}
       </section>
     </div>

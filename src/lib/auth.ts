@@ -9,7 +9,8 @@ const SESSION_DAYS = 7;
 export interface Session {
   username: string;
   name: string;
-  role: "admin" | "terapeuta";
+  role: "admin" | "terapeuta" | "paciente";
+  patientId?: string;
 }
 
 function secret(): string {
@@ -37,8 +38,13 @@ function parseToken(token: string | undefined): Session | null {
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (typeof data.exp !== "number" || data.exp < Date.now()) return null;
-    if (data.role !== "admin" && data.role !== "terapeuta") return null;
-    return { username: data.username, name: data.name, role: data.role };
+    if (!(["admin", "terapeuta", "paciente"] as string[]).includes(data.role)) return null;
+    return {
+      username: data.username,
+      name: data.name,
+      role: data.role,
+      patientId: data.patientId,
+    };
   } catch {
     return null;
   }
@@ -55,6 +61,7 @@ export async function login(
     username: user.username,
     name: user.name,
     role: user.role,
+    patientId: user.patientId,
   }), {
     httpOnly: true,
     sameSite: "lax",
@@ -76,7 +83,7 @@ export async function getSession(): Promise<Session | null> {
 
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
-  if (!session) redirect("/admin/login");
+  if (!session) redirect("/login");
   return session;
 }
 

@@ -15,6 +15,7 @@ import {
   deleteUser,
   getPatient,
   getUsers,
+  getUserByPatientId,
   saveExamFile,
 } from "@/lib/store";
 
@@ -25,6 +26,7 @@ function str(formData: FormData, key: string): string {
 export async function loginAction(formData: FormData): Promise<void> {
   const user = await login(str(formData, "username"), String(formData.get("password") ?? ""));
   if (!user) redirect("/admin/login?error=1");
+  if (user.role === "paciente") redirect("/mi-cuenta");
   redirect("/admin");
 }
 
@@ -193,4 +195,35 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
   if (!ok) redirect("/admin/usuarios?error=pass");
   revalidatePath("/admin/usuarios");
   redirect("/admin/usuarios");
+}
+
+export async function createPatientAccountAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const patientId = str(formData, "patientId");
+  const username = str(formData, "username");
+  const password = String(formData.get("password") ?? "");
+  const patient = await getPatient(patientId);
+  if (!patient) redirect(`/admin/pacientes`);
+  // Check if already has account
+  const existing = await getUserByPatientId(patientId);
+  if (existing) redirect(`/admin/pacientes/${patientId}?error=cuenta`);
+  const created = await createUser({
+    username,
+    name: patient.name,
+    role: "paciente",
+    password,
+    patientId,
+  });
+  if (!created) redirect(`/admin/pacientes/${patientId}?error=cuenta`);
+  revalidatePath(`/admin/pacientes/${patientId}`);
+  redirect(`/admin/pacientes/${patientId}#cuenta`);
+}
+
+export async function deletePatientAccountAction(formData: FormData): Promise<void> {
+  await requireAdmin();
+  const userId = str(formData, "userId");
+  const patientId = str(formData, "patientId");
+  await deleteUser(userId);
+  revalidatePath(`/admin/pacientes/${patientId}`);
+  redirect(`/admin/pacientes/${patientId}#cuenta`);
 }

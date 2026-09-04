@@ -2,7 +2,8 @@ CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'terapeuta')),
+  role TEXT NOT NULL CHECK (role IN ('admin', 'terapeuta', 'paciente')),
+  patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
   pass_salt TEXT NOT NULL,
   pass_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
