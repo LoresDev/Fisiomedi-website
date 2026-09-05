@@ -1,38 +1,11 @@
 import Link from "next/link";
 import { clinic, services, highlights } from "@/config/clinic";
+import { HeroBanner } from "@/components/HeroBanner";
 
 export default function HomePage() {
   return (
     <>
-      <section className="bg-gradient-to-br from-blue-700 via-blue-600 to-sky-600 text-white">
-        <div className="mx-auto max-w-6xl px-4 py-24 md:py-32">
-          <p className="inline-block rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium mb-6">
-            {clinic.tagline}
-          </p>
-          <h1 className="max-w-2xl text-4xl md:text-5xl font-bold leading-tight tracking-tight">
-            Tu recuperación es nuestro compromiso
-          </h1>
-          <p className="mt-5 max-w-xl text-lg text-blue-50 leading-relaxed">
-            {clinic.heroText}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-4">
-            <Link
-              href="/reservar"
-              className="rounded-full bg-white px-7 py-3.5 font-semibold text-blue-700 hover:bg-blue-50 transition-colors shadow-lg"
-            >
-              Reservar cita online
-            </Link>
-            <a
-              href={`https://wa.me/${clinic.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-full border border-white/60 px-7 py-3.5 font-semibold hover:bg-white/10 transition-colors"
-            >
-              Escríbenos por WhatsApp
-            </a>
-          </div>
-        </div>
-      </section>
+      <HeroBanner />
 
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="grid gap-8 md:grid-cols-3">
