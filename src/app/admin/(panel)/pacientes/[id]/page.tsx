@@ -334,6 +334,7 @@ export default async function FichaPacientePage({
                 <th className="px-6 py-2.5">Fecha</th>
                 <th className="px-6 py-2.5">Hora</th>
                 <th className="px-6 py-2.5">Servicio</th>
+                <th className="px-6 py-2.5">Especialista</th>
                 <th className="px-6 py-2.5">Estado</th>
               </tr>
             </thead>
@@ -343,6 +344,15 @@ export default async function FichaPacientePage({
                   <td className="px-6 py-3">{a.date}</td>
                   <td className="px-6 py-3 font-medium">{a.time}</td>
                   <td className="px-6 py-3">{a.serviceName}</td>
+                  <td className="px-6 py-3 text-xs text-slate-600">
+                    {a.therapistName ? (
+                      <span className="inline-flex items-center gap-1 font-medium text-slate-700">
+                        👨‍⚕️ {a.therapistName}
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 italic">Sin asignar</span>
+                    )}
+                  </td>
                   <td className="px-6 py-3 capitalize">{a.status}</td>
                 </tr>
               ))}

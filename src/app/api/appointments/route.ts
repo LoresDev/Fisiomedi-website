@@ -4,6 +4,7 @@ import {
   getAvailableSlots,
   isValidBookingDate,
 } from "@/lib/appointments";
+import { getStaffUsers } from "@/lib/store";
 
 export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date") ?? "";
@@ -32,6 +33,14 @@ export async function POST(request: NextRequest) {
   const date = String(body.date ?? "");
   const time = String(body.time ?? "");
   const notes = String(body.notes ?? "").trim();
+  const therapistId = String(body.therapistId ?? "").trim() || undefined;
+
+  let therapistName: string | undefined;
+  if (therapistId) {
+    const staff = await getStaffUsers();
+    const found = staff.find((u) => u.id === therapistId);
+    if (found) therapistName = found.name;
+  }
 
   if (name.length < 3) {
     return NextResponse.json({ error: "Ingresa tu nombre completo" }, { status: 400 });
@@ -63,6 +72,8 @@ export async function POST(request: NextRequest) {
       date,
       time,
       notes: notes || undefined,
+      therapistId,
+      therapistName,
     });
     return NextResponse.json({ ok: true, appointment }, { status: 201 });
   } catch {

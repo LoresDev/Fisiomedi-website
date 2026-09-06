@@ -3,7 +3,14 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { login, logout, requireAdmin, requireSession } from "@/lib/auth";
-import { setAppointmentStatus, addAppointment, type AppointmentStatus } from "@/lib/appointments";
+import {
+  setAppointmentStatus,
+  addAppointment,
+  getAppointment,
+  assignAppointmentTherapist,
+  linkAppointmentPatient,
+  type AppointmentStatus,
+} from "@/lib/appointments";
 import {
   addExam,
   addHistoryEntry,
@@ -13,8 +20,10 @@ import {
   deleteExam,
   deletePatient,
   deleteUser,
+  findOrCreatePatientFromAppointment,
   generateRandomPassword,
   getPatient,
+  getStaffUsers,
   getUsers,
   getUserByPatientId,
   saveExamFile,
@@ -161,6 +170,15 @@ export async function deleteExamAction(formData: FormData): Promise<void> {
 export async function createInternalAppointmentAction(formData: FormData): Promise<void> {
   await requireSession();
   const patientId = str(formData, "patientId");
+  const therapistId = str(formData, "therapistId");
+  let therapistName: string | undefined;
+
+  if (therapistId) {
+    const staff = await getStaffUsers();
+    const found = staff.find((u) => u.id === therapistId);
+    if (found) therapistName = found.name;
+  }
+
   let patientName = str(formData, "name");
   let phone = str(formData, "phone");
   if (patientId) {
@@ -183,12 +201,91 @@ export async function createInternalAppointmentAction(formData: FormData): Promi
       notes: str(formData, "notes"),
       patientId: patientId || undefined,
       source: "interno",
+      therapistId: therapistId || undefined,
+      therapistName,
     });
   } catch {
     redirect("/admin/citas?error=servicio");
   }
   revalidatePath("/admin/citas");
   redirect("/admin/citas");
+}
+
+export async function assignTherapistAction(formData: FormData): Promise<void> {
+  await requireSession();
+  const appointmentId = str(formData, "appointmentId");
+  const therapistId = str(formData, "therapistId");
+  let therapistName: string | undefined;
+
+  if (therapistId) {
+    const staff = await getStaffUsers();
+    const user = staff.find((u) => u.id === therapistId);
+    if (user) therapistName = user.name;
+  }
+
+  await assignAppointmentTherapist(appointmentId, therapistId || undefined, therapistName);
+  revalidatePath("/admin/citas");
+  revalidatePath("/admin");
+  redirect("/admin/citas#citas");
+}
+
+export async function uploadAppointmentResultAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  const appointmentId = str(formData, "appointmentId");
+  const title = str(formData, "title");
+  const examDate = str(formData, "examDate") || new Date().toISOString().slice(0, 10);
+  const notes = str(formData, "notes");
+  const markCompleted = formData.get("markCompleted") === "on";
+  const file = formData.get("file");
+
+  if (!appointmentId || !title || !(file instanceof File) || file.size === 0) {
+    redirect("/admin/citas?error=archivo_requerido");
+  }
+
+  const appointment = await getAppointment(appointmentId);
+  if (!appointment) {
+    redirect("/admin/citas?error=cita_no_encontrada");
+  }
+
+  // Ensure patient exists and is linked
+  let patientId = appointment.patientId;
+  if (!patientId) {
+    const patient = await findOrCreatePatientFromAppointment({
+      name: appointment.name,
+      phone: appointment.phone,
+      email: appointment.email,
+    });
+    patientId = patient.id;
+    await linkAppointmentPatient(appointmentId, patientId);
+  }
+
+  const saved = await saveExamFile(file);
+  if (!saved) {
+    redirect("/admin/citas?error=error_subida");
+  }
+
+  await addExam({
+    patientId,
+    appointmentId,
+    title,
+    examDate,
+    notes: notes || undefined,
+    fileName: saved.fileName,
+    originalName: file.name,
+    mimeType: saved.mimeType,
+    size: saved.size,
+    createdBy: session.name,
+    status: "validado",
+  });
+
+  if (markCompleted && appointment.status !== "completada") {
+    await setAppointmentStatus(appointmentId, "completada");
+  }
+
+  revalidatePath("/admin/citas");
+  revalidatePath(`/admin/pacientes/${patientId}`);
+  revalidatePath("/mi-cuenta");
+  redirect("/admin/citas?resultado_subido=1#citas");
 }
 
 export async function createUserAction(formData: FormData): Promise<void> {

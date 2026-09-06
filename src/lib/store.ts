@@ -87,6 +87,14 @@ export async function getUsers(): Promise<User[]> {
   return rows.map(toUser);
 }
 
+export async function getStaffUsers(): Promise<User[]> {
+  await ensureSeedUsers();
+  const rows = await query<UserRow>(
+    `SELECT ${USER_COLS} FROM users WHERE role IN ('admin', 'terapeuta') ORDER BY name`
+  );
+  return rows.map(toUser);
+}
+
 export async function findUser(username: string): Promise<User | undefined> {
   await ensureSeedUsers();
   const row = await queryOne<UserRow>(
@@ -268,6 +276,27 @@ export async function createPatient(input: PatientInput): Promise<Patient> {
   return toPatient(row!);
 }
 
+export async function findOrCreatePatientFromAppointment(input: {
+  name: string;
+  phone: string;
+  email?: string;
+}): Promise<Patient> {
+  const cleanPhone = input.phone.trim();
+  if (cleanPhone) {
+    const existing = await queryOne<PatientRow>(
+      `SELECT ${PATIENT_COLS} FROM patients WHERE phone = $1 LIMIT 1`,
+      [cleanPhone]
+    );
+    if (existing) return toPatient(existing);
+  }
+  return await createPatient({
+    name: input.name.trim(),
+    docId: "",
+    phone: cleanPhone,
+    email: input.email?.trim() || undefined,
+  });
+}
+
 export async function updatePatient(
   id: string,
   patch: Partial<PatientInput>
@@ -368,6 +397,7 @@ export type ExamStatus = "validado" | "en_revision" | "rechazado";
 export interface Exam {
   id: string;
   patientId: string;
+  appointmentId?: string;
   title: string;
   examDate?: string;
   notes?: string;
@@ -386,6 +416,7 @@ export interface Exam {
 interface ExamRow {
   id: string;
   patient_id: string;
+  appointment_id?: string | null;
   title: string;
   exam_date: string | null;
   notes: string | null;
@@ -405,6 +436,7 @@ function toExam(r: ExamRow): Exam {
   return {
     id: r.id,
     patientId: r.patient_id,
+    appointmentId: r.appointment_id ?? undefined,
     title: r.title,
     examDate: r.exam_date ?? undefined,
     notes: r.notes ?? undefined,
@@ -430,6 +462,7 @@ async function ensureExamColumns(): Promise<void> {
       ALTER TABLE exams ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
       ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_by TEXT;
       ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_at TIMESTAMPTZ;
+      ALTER TABLE exams ADD COLUMN IF NOT EXISTS appointment_id UUID;
     `);
     examColumnsEnsured = true;
   } catch (err) {
@@ -446,6 +479,31 @@ export async function getExams(patientId: string): Promise<Exam[]> {
     [patientId]
   );
   return rows.map(toExam);
+}
+
+export async function getExamsByAppointment(appointmentId: string): Promise<Exam[]> {
+  await ensureExamColumns();
+  const rows = await query<ExamRow>(
+    `SELECT * FROM exams WHERE appointment_id = $1 ORDER BY created_at DESC`,
+    [appointmentId]
+  );
+  return rows.map(toExam);
+}
+
+export async function getAppointmentExamCounts(): Promise<Record<string, number>> {
+  await ensureExamColumns();
+  try {
+    const rows = await query<{ appointment_id: string; count: string }>(
+      `SELECT appointment_id, count(*)::text AS count FROM exams WHERE appointment_id IS NOT NULL GROUP BY appointment_id`
+    );
+    const map: Record<string, number> = {};
+    for (const r of rows) {
+      if (r.appointment_id) map[r.appointment_id] = Number(r.count);
+    }
+    return map;
+  } catch {
+    return {};
+  }
 }
 
 export async function getExam(id: string): Promise<Exam | undefined> {
@@ -477,19 +535,23 @@ export async function saveExamFile(
 }
 
 export async function addExam(
-  input: Omit<Exam, "id" | "createdAt" | "status"> & { status?: ExamStatus }
+  input: Omit<Exam, "id" | "createdAt" | "status"> & {
+    status?: ExamStatus;
+    appointmentId?: string;
+  }
 ): Promise<Exam> {
   await ensureExamColumns();
   const status = input.status || "validado";
   const validatedAt = status === "validado" ? new Date() : null;
   const validatedBy = status === "validado" ? input.createdBy : null;
   const row = await queryOne<ExamRow>(
-    `INSERT INTO exams (id, patient_id, title, exam_date, notes, file_name, original_name, mime_type, size, created_by, status, validated_by, validated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    `INSERT INTO exams (id, patient_id, appointment_id, title, exam_date, notes, file_name, original_name, mime_type, size, created_by, status, validated_by, validated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      RETURNING *`,
     [
       newId(),
       input.patientId,
+      emptyToNull(input.appointmentId),
       input.title,
       emptyToNull(input.examDate),
       emptyToNull(input.notes),

@@ -18,11 +18,22 @@ function todayStr(): string {
   ).padStart(2, "0")}`;
 }
 
-export function BookingForm() {
+interface Specialist {
+  id: string;
+  name: string;
+  role: string;
+}
+
+interface Props {
+  specialists?: Specialist[];
+}
+
+export function BookingForm({ specialists = [] }: Props) {
   const params = useSearchParams();
   const preselected = params.get("servicio");
 
   const [serviceId, setServiceId] = useState(preselected ?? "");
+  const [therapistId, setTherapistId] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [slots, setSlots] = useState<string[]>([]);
@@ -71,7 +82,7 @@ export function BookingForm() {
       const res = await fetch("/api/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, email, serviceId, date, time, notes }),
+        body: JSON.stringify({ name, phone, email, serviceId, date, time, notes, therapistId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error al reservar");
@@ -151,8 +162,31 @@ export function BookingForm() {
         </div>
       </fieldset>
 
+      {specialists && specialists.length > 0 && (
+        <fieldset>
+          <legend className="font-semibold text-slate-900 mb-2">
+            2. Especialista de preferencia (opcional)
+          </legend>
+          <p className="text-xs text-slate-500 mb-3">
+            Puedes elegir con qué fisioterapeuta o médico atenderte, o dejarlo en asignación automática.
+          </p>
+          <select
+            value={therapistId}
+            onChange={(e) => setTherapistId(e.target.value)}
+            className={`${inputCls} max-w-md cursor-pointer`}
+          >
+            <option value="">— Asignación automática (cualquier profesional disponible) —</option>
+            {specialists.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name} ({s.role === "admin" ? "Especialista Clínico" : "Fisioterapeuta"})
+              </option>
+            ))}
+          </select>
+        </fieldset>
+      )}
+
       <fieldset>
-        <legend className="font-semibold text-slate-900 mb-3">2. Fecha y hora</legend>
+        <legend className="font-semibold text-slate-900 mb-3">3. Fecha y hora</legend>
         <input
           type="date"
           value={date}
@@ -186,7 +220,7 @@ export function BookingForm() {
       </fieldset>
 
       <fieldset>
-        <legend className="font-semibold text-slate-900 mb-3">3. Tus datos</legend>
+        <legend className="font-semibold text-slate-900 mb-3">4. Tus datos</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm text-slate-600">Nombre completo *</span>

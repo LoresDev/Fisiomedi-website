@@ -145,6 +145,11 @@ export default async function MiCuentaPage() {
                     <p className="text-sm text-slate-500 mt-0.5">
                       {a.date} · {a.time}
                     </p>
+                    {a.therapistName && (
+                      <p className="text-xs text-blue-700 mt-0.5 font-medium flex items-center gap-1">
+                        <span>👨‍⚕️</span> {a.therapistName}
+                      </p>
+                    )}
                     {a.notes && (
                       <p className="text-xs text-slate-400 mt-1">{a.notes}</p>
                     )}
@@ -289,6 +294,11 @@ export default async function MiCuentaPage() {
                     <p className="text-sm text-slate-400 mt-0.5">
                       {a.date} · {a.time}
                     </p>
+                    {a.therapistName && (
+                      <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                        <span>👨‍⚕️</span> {a.therapistName}
+                      </p>
+                    )}
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium capitalize ${

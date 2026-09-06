@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getAppointments, getSlotsForDate, type AppointmentStatus } from "@/lib/appointments";
 import { services } from "@/config/clinic";
-import { getPatients } from "@/lib/store";
+import { getPatients, getStaffUsers, getAppointmentExamCounts } from "@/lib/store";
 import { createInternalAppointmentAction, updateStatusAction } from "../../actions";
+import { AssignTherapistSelect } from "./AssignTherapistSelect";
+import { UploadResultModal } from "./UploadResultModal";
 
 const statusStyles: Record<AppointmentStatus, string> = {
   pendiente: "bg-amber-100 text-amber-800",
@@ -30,11 +32,16 @@ const input =
 export default async function CitasPage({
   searchParams,
 }: {
-  searchParams: Promise<{ estado?: string; error?: string }>;
+  searchParams: Promise<{ estado?: string; terapeuta?: string; resultado_subido?: string; error?: string }>;
 }) {
-  const { estado, error } = await searchParams;
-  const all = await getAppointments();
-  const patients = await getPatients();
+  const { estado, terapeuta, resultado_subido, error } = await searchParams;
+  const [all, patients, staff, examCounts] = await Promise.all([
+    getAppointments(),
+    getPatients(),
+    getStaffUsers(),
+    getAppointmentExamCounts(),
+  ]);
+
   all.sort((a, b) => `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`));
 
   const filters: { key: string; label: string }[] = [
@@ -46,19 +53,35 @@ export default async function CitasPage({
     { key: "todas", label: "Todas" },
   ];
 
-  const visible =
+  let visible =
     !estado || estado === ""
       ? all.filter((a) => a.status !== "cancelada")
       : estado === "todas"
         ? all
         : all.filter((a) => a.status === (estado as AppointmentStatus));
 
+  if (terapeuta) {
+    visible = visible.filter((a) => a.therapistId === terapeuta);
+  }
+
   return (
-    <div>
+    <div id="citas">
       <h1 className="text-2xl font-bold text-slate-900">Citas</h1>
       <p className="mt-1 text-sm text-slate-500">
-        Gestiona las reservas web y las citas agendadas internamente.
+        Gestiona las reservas web y citas internas, asigna especialistas y carga resultados médicos.
       </p>
+
+      {resultado_subido && (
+        <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-sm text-emerald-800 flex items-center gap-2.5 animate-fade-in shadow-xs">
+          <span className="text-lg">✓</span>
+          <div>
+            <p className="font-semibold">¡Resultados médicos cargados exitosamente!</p>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              El informe y archivos se vincularon a la ficha del paciente y ya pueden ser visualizados desde su portal.
+            </p>
+          </div>
+        </div>
+      )}
 
       <details className="mt-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
         <summary className="cursor-pointer select-none px-6 py-4 font-semibold text-slate-900 hover:text-blue-700">
@@ -99,6 +122,17 @@ export default async function CitasPage({
               </select>
             </label>
             <label className="block">
+              <span className="mb-1 block text-xs text-slate-500">Médico / Fisioterapeuta asignado</span>
+              <select name="therapistId" className={input}>
+                <option value="">— Asignar después —</option>
+                {staff.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name} ({s.role === "admin" ? "Especialista" : "Fisioterapeuta"})
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
               <span className="mb-1 block text-xs text-slate-500">Fecha *</span>
               <input type="date" name="date" required className={input} />
             </label>
@@ -110,7 +144,7 @@ export default async function CitasPage({
                 ))}
               </select>
             </label>
-            <label className="block sm:col-span-3">
+            <label className="block sm:col-span-2">
               <span className="mb-1 block text-xs text-slate-500">Motivo / notas</span>
               <input type="text" name="notes" className={input} />
             </label>
@@ -121,23 +155,50 @@ export default async function CitasPage({
         </form>
       </details>
 
-      {error === undefined && null}
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        {/* State filters */}
+        <nav className="flex flex-wrap gap-2">
+          {filters.map((f) => (
+            <Link
+              key={f.key || "activas"}
+              href={`/admin/citas?${new URLSearchParams({
+                ...(f.key ? { estado: f.key } : {}),
+                ...(terapeuta ? { terapeuta } : {}),
+              }).toString()}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                (estado ?? "") === f.key
+                  ? "bg-slate-900 text-white"
+                  : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {f.label}
+            </Link>
+          ))}
+        </nav>
 
-      <nav className="mt-6 flex flex-wrap gap-2">
-        {filters.map((f) => (
-          <Link
-            key={f.key || "activas"}
-            href={f.key ? `/admin/citas?estado=${f.key}` : "/admin/citas"}
-            className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              (estado ?? "") === f.key
-                ? "bg-slate-900 text-white"
-                : "bg-white border border-slate-300 text-slate-600 hover:bg-slate-50"
-            }`}
+        {/* Filter by specialist */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-slate-500 font-medium">Filtrar por médico:</span>
+          <select
+            defaultValue={terapeuta || ""}
+            onChange={(e) => {
+              const val = e.target.value;
+              const params = new URLSearchParams();
+              if (estado) params.set("estado", estado);
+              if (val) params.set("terapeuta", val);
+              window.location.href = `/admin/citas?${params.toString()}`;
+            }}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
           >
-            {f.label}
-          </Link>
-        ))}
-      </nav>
+            <option value="">Todos los especialistas</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name} ({s.role === "admin" ? "Especialista" : "Fisioterapeuta"})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
       {visible.length === 0 ? (
         <p className="mt-6 rounded-2xl bg-white border border-slate-200 p-10 text-center text-slate-400 shadow-sm">
@@ -145,13 +206,14 @@ export default async function CitasPage({
         </p>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-2xl bg-white border border-slate-200 shadow-sm">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[1020px] text-sm">
             <thead>
               <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
                 <th className="px-4 py-3">Fecha</th>
                 <th className="px-4 py-3">Hora</th>
                 <th className="px-4 py-3">Paciente</th>
                 <th className="px-4 py-3">Servicio</th>
+                <th className="px-4 py-3">Especialista Asignado</th>
                 <th className="px-4 py-3">Origen</th>
                 <th className="px-4 py-3">Estado</th>
                 <th className="px-4 py-3">Acciones</th>
@@ -159,27 +221,35 @@ export default async function CitasPage({
             </thead>
             <tbody>
               {visible.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100 last:border-0 align-top">
-                  <td className="whitespace-nowrap px-4 py-3">{a.date}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium">{a.time}</td>
+                <tr key={a.id} className="border-b border-slate-100 last:border-0 align-top hover:bg-slate-50/50 transition-colors">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-800">{a.date}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-slate-600">{a.time}</td>
                   <td className="px-4 py-3">
                     {a.patientId ? (
-                      <Link href={`/admin/pacientes/${a.patientId}`} className="text-blue-700 hover:underline">
+                      <Link href={`/admin/pacientes/${a.patientId}`} className="font-semibold text-blue-700 hover:underline">
                         {a.name}
                       </Link>
                     ) : (
                       <>
-                        {a.name}
+                        <span className="font-semibold text-slate-800">{a.name}</span>
                         <span className="block text-xs text-slate-400">{a.phone}</span>
                       </>
                     )}
                     {a.notes && (
-                      <span className="block max-w-[220px] truncate text-xs text-slate-400" title={a.notes}>
+                      <span className="block max-w-[200px] truncate text-xs text-slate-400" title={a.notes}>
                         {a.notes}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">{a.serviceName}</td>
+                  <td className="px-4 py-3 font-medium text-slate-700">{a.serviceName}</td>
+                  <td className="px-4 py-3">
+                    <AssignTherapistSelect
+                      appointmentId={a.id}
+                      currentTherapistId={a.therapistId}
+                      therapistName={a.therapistName}
+                      staff={staff}
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${a.source === "interno" ? "bg-indigo-50 text-indigo-700" : "bg-emerald-50 text-emerald-700"}`}>
                       {a.source === "interno" ? "Interna" : "Web"}
@@ -191,13 +261,13 @@ export default async function CitasPage({
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-2">
+                    <div className="flex items-center flex-wrap gap-2">
                       {(nextStatus[a.status] ?? []).map((n) => (
                         <form key={n.to} action={updateStatusAction}>
                           <input type="hidden" name="id" value={a.id} />
                           <input type="hidden" name="status" value={n.to} />
                           <button
-                            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                               n.to === "cancelada"
                                 ? "border border-red-300 text-red-600 hover:bg-red-50"
                                 : "bg-blue-600 text-white hover:bg-blue-700"
@@ -207,6 +277,14 @@ export default async function CitasPage({
                           </button>
                         </form>
                       ))}
+
+                      {/* Botón Ingresar Resultados si la cita está confirmada o completada */}
+                      {(a.status === "confirmada" || a.status === "completada") && (
+                        <UploadResultModal
+                          appointment={a}
+                          examCount={examCounts[a.id] ?? 0}
+                        />
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -218,3 +296,4 @@ export default async function CitasPage({
     </div>
   );
 }
+

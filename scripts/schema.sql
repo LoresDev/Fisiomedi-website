@@ -50,9 +50,11 @@ CREATE TABLE IF NOT EXISTS exams (
   rejection_reason TEXT,
   validated_by TEXT,
   validated_at TIMESTAMPTZ,
+  appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_exams_patient ON exams(patient_id);
+CREATE INDEX IF NOT EXISTS idx_exams_appointment ON exams(appointment_id);
 
 CREATE TABLE IF NOT EXISTS appointments (
   id UUID PRIMARY KEY,
@@ -68,6 +70,9 @@ CREATE TABLE IF NOT EXISTS appointments (
     CHECK (status IN ('pendiente', 'confirmada', 'cancelada', 'completada')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
-  source TEXT NOT NULL DEFAULT 'web' CHECK (source IN ('web', 'interno'))
+  source TEXT NOT NULL DEFAULT 'web' CHECK (source IN ('web', 'interno')),
+  therapist_id UUID REFERENCES users(id) ON DELETE SET NULL,
+  therapist_name TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date);
+CREATE INDEX IF NOT EXISTS idx_appointments_therapist ON appointments(therapist_id);

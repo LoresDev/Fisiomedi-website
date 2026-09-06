@@ -22,6 +22,8 @@ export interface Appointment {
   createdAt: string;
   patientId?: string;
   source?: "web" | "interno";
+  therapistId?: string;
+  therapistName?: string;
 }
 
 interface AppointmentRow {
@@ -38,6 +40,8 @@ interface AppointmentRow {
   created_at: Date;
   patient_id: string | null;
   source: "web" | "interno";
+  therapist_id?: string | null;
+  therapist_name?: string | null;
 }
 
 function toAppointment(r: AppointmentRow): Appointment {
@@ -55,17 +59,44 @@ function toAppointment(r: AppointmentRow): Appointment {
     createdAt: r.created_at.toISOString(),
     patientId: r.patient_id ?? undefined,
     source: r.source,
+    therapistId: r.therapist_id ?? undefined,
+    therapistName: r.therapist_name ?? undefined,
   };
 }
 
+let appointmentColumnsEnsured = false;
+export async function ensureAppointmentColumns(): Promise<void> {
+  if (appointmentColumnsEnsured) return;
+  try {
+    await query(`
+      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_id UUID;
+      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_name TEXT;
+    `);
+    appointmentColumnsEnsured = true;
+  } catch (err) {
+    console.error("ensureAppointmentColumns error:", err);
+  }
+}
+
 export async function getAppointments(): Promise<Appointment[]> {
+  await ensureAppointmentColumns();
   const rows = await query<AppointmentRow>(
     `SELECT * FROM appointments ORDER BY date, time, created_at`
   );
   return rows.map(toAppointment);
 }
 
+export async function getAppointment(id: string): Promise<Appointment | undefined> {
+  await ensureAppointmentColumns();
+  const row = await queryOne<AppointmentRow>(
+    `SELECT * FROM appointments WHERE id = $1`,
+    [id]
+  );
+  return row ? toAppointment(row) : undefined;
+}
+
 export async function getActiveByDate(date: string): Promise<Appointment[]> {
+  await ensureAppointmentColumns();
   const rows = await query<AppointmentRow>(
     `SELECT * FROM appointments
      WHERE date = $1 AND status IN ('pendiente', 'confirmada')`,
@@ -84,14 +115,17 @@ export async function addAppointment(input: {
   notes?: string;
   patientId?: string;
   source?: "web" | "interno";
+  therapistId?: string;
+  therapistName?: string;
 }): Promise<Appointment> {
+  await ensureAppointmentColumns();
   const service = services.find((s) => s.id === input.serviceId);
   if (!service) throw new Error("Servicio no válido");
 
   const row = await queryOne<AppointmentRow>(
     `INSERT INTO appointments
-       (id, name, phone, email, service_id, service_name, date, time, notes, patient_id, source)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       (id, name, phone, email, service_id, service_name, date, time, notes, patient_id, source, therapist_id, therapist_name)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING *`,
     [
       randomUUID(),
@@ -105,15 +139,43 @@ export async function addAppointment(input: {
       input.notes?.trim() || null,
       input.patientId || null,
       input.source === "interno" ? "interno" : "web",
+      input.therapistId || null,
+      input.therapistName || null,
     ]
   );
   return toAppointment(row!);
+}
+
+export async function assignAppointmentTherapist(
+  id: string,
+  therapistId?: string,
+  therapistName?: string
+): Promise<boolean> {
+  await ensureAppointmentColumns();
+  const result = await query(
+    `UPDATE appointments SET therapist_id = $2, therapist_name = $3 WHERE id = $1 RETURNING id`,
+    [id, therapistId || null, therapistName || null]
+  );
+  return result.length > 0;
+}
+
+export async function linkAppointmentPatient(
+  appointmentId: string,
+  patientId: string
+): Promise<boolean> {
+  await ensureAppointmentColumns();
+  const result = await query(
+    `UPDATE appointments SET patient_id = $2 WHERE id = $1 RETURNING id`,
+    [appointmentId, patientId]
+  );
+  return result.length > 0;
 }
 
 export async function setAppointmentStatus(
   id: string,
   status: AppointmentStatus
 ): Promise<boolean> {
+  await ensureAppointmentColumns();
   const result = await query(
     `UPDATE appointments SET status = $2 WHERE id = $1 RETURNING id`,
     [id, status]
