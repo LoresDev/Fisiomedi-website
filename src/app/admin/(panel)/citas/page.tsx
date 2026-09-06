@@ -5,6 +5,7 @@ import { getPatients, getStaffUsers, getAppointmentExamCounts } from "@/lib/stor
 import { createInternalAppointmentAction, updateStatusAction } from "../../actions";
 import { AssignTherapistSelect } from "./AssignTherapistSelect";
 import { UploadResultModal } from "./UploadResultModal";
+import { SpecialistFilterSelect } from "./SpecialistFilterSelect";
 
 const statusStyles: Record<AppointmentStatus, string> = {
   pendiente: "bg-amber-100 text-amber-800",
@@ -177,27 +178,11 @@ export default async function CitasPage({
         </nav>
 
         {/* Filter by specialist */}
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-slate-500 font-medium">Filtrar por médico:</span>
-          <select
-            defaultValue={terapeuta || ""}
-            onChange={(e) => {
-              const val = e.target.value;
-              const params = new URLSearchParams();
-              if (estado) params.set("estado", estado);
-              if (val) params.set("terapeuta", val);
-              window.location.href = `/admin/citas?${params.toString()}`;
-            }}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 font-medium text-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-          >
-            <option value="">Todos los especialistas</option>
-            {staff.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.role === "admin" ? "Especialista" : "Fisioterapeuta"})
-              </option>
-            ))}
-          </select>
-        </div>
+        <SpecialistFilterSelect
+          staff={staff}
+          currentTherapist={terapeuta}
+          currentStatus={estado}
+        />
       </div>
 
       {visible.length === 0 ? (

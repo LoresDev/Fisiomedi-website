@@ -56,9 +56,9 @@ function toAppointment(r: AppointmentRow): Appointment {
     time: r.time,
     notes: r.notes ?? undefined,
     status: r.status,
-    createdAt: r.created_at.toISOString(),
+    createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at || new Date().toISOString()),
     patientId: r.patient_id ?? undefined,
-    source: r.source,
+    source: r.source || "web",
     therapistId: r.therapist_id ?? undefined,
     therapistName: r.therapist_name ?? undefined,
   };
@@ -68,10 +68,8 @@ let appointmentColumnsEnsured = false;
 export async function ensureAppointmentColumns(): Promise<void> {
   if (appointmentColumnsEnsured) return;
   try {
-    await query(`
-      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_id UUID;
-      ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_name TEXT;
-    `);
+    await query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_id UUID`);
+    await query(`ALTER TABLE appointments ADD COLUMN IF NOT EXISTS therapist_name TEXT`);
     appointmentColumnsEnsured = true;
   } catch (err) {
     console.error("ensureAppointmentColumns error:", err);

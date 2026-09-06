@@ -445,11 +445,11 @@ function toExam(r: ExamRow): Exam {
     mimeType: r.mime_type,
     size: Number(r.size),
     createdBy: r.created_by,
-    createdAt: r.created_at.toISOString(),
+    createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at || new Date().toISOString()),
     status: (r.status as ExamStatus) || "validado",
     rejectionReason: r.rejection_reason ?? undefined,
     validatedBy: r.validated_by ?? undefined,
-    validatedAt: r.validated_at ? r.validated_at.toISOString() : undefined,
+    validatedAt: r.validated_at ? (r.validated_at instanceof Date ? r.validated_at.toISOString() : String(r.validated_at)) : undefined,
   };
 }
 
@@ -457,13 +457,11 @@ let examColumnsEnsured = false;
 async function ensureExamColumns(): Promise<void> {
   if (examColumnsEnsured) return;
   try {
-    await query(`
-      ALTER TABLE exams ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'validado';
-      ALTER TABLE exams ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
-      ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_by TEXT;
-      ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_at TIMESTAMPTZ;
-      ALTER TABLE exams ADD COLUMN IF NOT EXISTS appointment_id UUID;
-    `);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'validado'`);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS rejection_reason TEXT`);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_by TEXT`);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_at TIMESTAMPTZ`);
+    await query(`ALTER TABLE exams ADD COLUMN IF NOT EXISTS appointment_id UUID`);
     examColumnsEnsured = true;
   } catch (err) {
     console.error("ensureExamColumns warning:", err);
