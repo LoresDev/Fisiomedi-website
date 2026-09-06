@@ -70,7 +70,7 @@ export default async function LoginPage({
                   htmlFor="login-username"
                   className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
-                  Usuario
+                  Usuario o DNI
                 </label>
                 <input
                   id="login-username"
@@ -80,7 +80,7 @@ export default async function LoginPage({
                   autoFocus
                   autoComplete="username"
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                  placeholder="Tu nombre de usuario"
+                  placeholder="Tu DNI (paciente) o usuario"
                 />
               </div>
 
@@ -100,6 +100,17 @@ export default async function LoginPage({
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
                   placeholder="••••••••"
                 />
+              </div>
+
+              {/* Patient info badge */}
+              <div className="rounded-xl bg-blue-50/80 border border-blue-100 p-3 text-xs text-blue-800 flex items-start gap-2.5">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-0.5 text-blue-600">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4m0-4h.01" strokeLinecap="round" />
+                </svg>
+                <span>
+                  <strong>¿Deseas ver tus resultados?</strong> Si eres paciente, ingresa con tu <strong>DNI</strong> y la contraseña proporcionada en clínica.
+                </span>
               </div>
 
               {error && (
@@ -122,9 +133,9 @@ export default async function LoginPage({
 
               <button
                 type="submit"
-                className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 active:scale-[0.98] transition-all"
+                className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm"
               >
-                Ingresar
+                Ingresar a mi cuenta
               </button>
             </form>
           </div>

@@ -44,6 +44,15 @@ export default async function PanelLayout({
             </nav>
           </div>
           <div className="flex items-center gap-3 shrink-0 text-sm">
+            <Link
+              href="/"
+              className="hidden sm:inline-flex items-center gap-1 text-xs text-blue-100 hover:text-white border border-white/30 rounded-full px-3 py-1 hover:bg-white/10 transition-colors"
+            >
+              <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+              </svg>
+              Ver web
+            </Link>
             <span className="hidden sm:inline text-blue-100">
               {session.name}
               <span className="ml-1.5 rounded-full bg-blue-500/60 px-2 py-0.5 text-xs capitalize">

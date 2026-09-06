@@ -125,7 +125,7 @@ export default async function MiCuentaPage() {
         </section>
 
         {/* Mis Resultados */}
-        <section className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+        <section id="resultados" className="rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden scroll-mt-20">
           <header className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
             <div>
               <h2 className="font-semibold text-slate-900">Mis Resultados</h2>
