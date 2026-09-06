@@ -25,10 +25,10 @@ export default async function FichaPacientePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; nueva_clave?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, nueva_clave } = await searchParams;
   const patient = await getPatient(id);
   if (!patient) notFound();
 
@@ -262,16 +262,46 @@ export default async function FichaPacientePage({
         <header className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="font-semibold text-slate-900">Cuenta de acceso</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Permite al paciente ver sus citas desde su cuenta</p>
+            <p className="text-xs text-slate-400 mt-0.5">Permite al paciente ver sus citas y resultados</p>
           </div>
           {patientAccount && (
             <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium">Activa</span>
           )}
         </header>
 
+        {/* Generated password banner — shown once after creation */}
+        {nueva_clave && (
+          <div className="mx-6 mt-5 rounded-xl bg-green-50 border border-green-200 px-5 py-4">
+            <p className="text-sm font-semibold text-green-800 mb-1">✅ Cuenta creada exitosamente</p>
+            <p className="text-xs text-green-700 mb-3">
+              Entrega esta contraseña temporal al paciente. No se volverá a mostrar.
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex-1">
+                <p className="text-xs text-green-600 mb-1">Usuario (DNI)</p>
+                <code className="block rounded-lg bg-white border border-green-300 px-4 py-2 text-sm font-mono font-semibold text-slate-800">
+                  {patientAccount?.username ?? patient.docId}
+                </code>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-green-600 mb-1">Contraseña temporal</p>
+                <code className="block rounded-lg bg-white border border-green-300 px-4 py-2 text-sm font-mono font-semibold text-slate-800">
+                  {nueva_clave}
+                </code>
+              </div>
+            </div>
+            <p className="text-xs text-green-600 mt-3">El paciente deberá cambiarla en su primer ingreso.</p>
+          </div>
+        )}
+
         {error === "cuenta" && (
           <p className="mx-6 mt-4 rounded-lg bg-red-50 border border-red-200 px-4 py-2.5 text-sm text-red-700">
-            No se pudo crear la cuenta. Verifica que el usuario no exista ya.
+            No se pudo crear la cuenta. El DNI ya puede estar registrado como usuario.
+          </p>
+        )}
+        {error === "sin_dni" && (
+          <p className="mx-6 mt-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-sm text-amber-800">
+            Este paciente no tiene DNI registrado. Edita su ficha y añade el DNI antes de crear la cuenta.
           </p>
         )}
 
@@ -279,9 +309,14 @@ export default async function FichaPacientePage({
           <div className="px-6 py-5 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm text-slate-700">
-                Usuario: <strong className="font-mono">{patientAccount.username}</strong>
+                Usuario (DNI): <strong className="font-mono">{patientAccount.username}</strong>
               </p>
               <p className="text-xs text-slate-400 mt-0.5">Creada el {new Date(patientAccount.createdAt).toLocaleDateString("es")}</p>
+              {patientAccount.mustChangePassword && (
+                <span className="mt-1 inline-block rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-xs">
+                  Pendiente cambio de contraseña
+                </span>
+              )}
             </div>
             <form action={deletePatientAccountAction}>
               <input type="hidden" name="userId" value={patientAccount.id} />
@@ -292,35 +327,29 @@ export default async function FichaPacientePage({
             </form>
           </div>
         ) : (
-          <form action={createPatientAccountAction} className="px-6 py-5 space-y-4">
-            <input type="hidden" name="patientId" value={patient.id} />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1 block text-xs text-slate-500">Nombre de usuario *</span>
-                <input
-                  type="text"
-                  name="username"
-                  required
-                  placeholder="Ej: juan.perez"
-                  className={input}
-                />
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-xs text-slate-500">Contraseña inicial *</span>
-                <input
-                  type="text"
-                  name="password"
-                  required
-                  minLength={6}
-                  placeholder="Mínimo 6 caracteres"
-                  className={input}
-                />
-              </label>
-            </div>
-            <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
-              Crear cuenta de acceso
-            </button>
-          </form>
+          <div className="px-6 py-5">
+            {!patient.docId || !patient.docId.trim() ? (
+              <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                ⚠️ Añade el <strong>DNI</strong> del paciente en su ficha antes de crear una cuenta.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-3">
+                  <p className="text-xs text-slate-500 mb-1">Usuario que se asignará</p>
+                  <p className="font-mono font-semibold text-slate-800">{patient.docId}</p>
+                </div>
+                <p className="text-xs text-slate-500">
+                  Se generará una contraseña temporal que deberás entregar al paciente. El paciente la cambiará en su primer ingreso.
+                </p>
+                <form action={createPatientAccountAction}>
+                  <input type="hidden" name="patientId" value={patient.id} />
+                  <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+                    Generar cuenta de acceso
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
         )}
       </section>
     </div>

@@ -11,3 +11,4 @@ export default async function MiCuentaLayout({
   if (session.role !== "paciente") redirect("/admin");
   return <>{children}</>;
 }
+

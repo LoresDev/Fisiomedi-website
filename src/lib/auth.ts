@@ -11,6 +11,7 @@ export interface Session {
   name: string;
   role: "admin" | "terapeuta" | "paciente";
   patientId?: string;
+  mustChangePassword?: boolean;
 }
 
 function secret(): string {
@@ -44,6 +45,7 @@ function parseToken(token: string | undefined): Session | null {
       name: data.name,
       role: data.role,
       patientId: data.patientId,
+      mustChangePassword: data.mustChangePassword ?? false,
     };
   } catch {
     return null;
@@ -62,6 +64,7 @@ export async function login(
     name: user.name,
     role: user.role,
     patientId: user.patientId,
+    mustChangePassword: user.mustChangePassword,
   }), {
     httpOnly: true,
     sameSite: "lax",
@@ -69,6 +72,19 @@ export async function login(
     maxAge: SESSION_DAYS * 24 * 60 * 60,
   });
   return user;
+}
+
+/** Re-issue the session cookie after password change to clear mustChangePassword flag */
+export async function refreshSession(): Promise<void> {
+  const session = await getSession();
+  if (!session) return;
+  const store = await cookies();
+  store.set(COOKIE_NAME, createToken({ ...session, mustChangePassword: false }), {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: SESSION_DAYS * 24 * 60 * 60,
+  });
 }
 
 export async function logout(): Promise<void> {

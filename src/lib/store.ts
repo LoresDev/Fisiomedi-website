@@ -19,6 +19,7 @@ export interface User {
   name: string;
   role: "admin" | "terapeuta" | "paciente";
   patientId?: string;
+  mustChangePassword: boolean;
   passSalt: string;
   passHash: string;
   createdAt: string;
@@ -30,6 +31,7 @@ interface UserRow {
   name: string;
   role: "admin" | "terapeuta" | "paciente";
   patient_id: string | null;
+  must_change_password: boolean;
   pass_salt: string;
   pass_hash: string;
   created_at: Date;
@@ -42,6 +44,7 @@ function toUser(r: UserRow): User {
     name: r.name,
     role: r.role,
     patientId: r.patient_id ?? undefined,
+    mustChangePassword: r.must_change_password,
     passSalt: r.pass_salt,
     passHash: r.pass_hash,
     createdAt: r.created_at.toISOString(),
@@ -52,7 +55,14 @@ function makePassword(salt: string, password: string): string {
   return hashValue(`${salt}:${password}`);
 }
 
-const USER_COLS = `id, username, name, role, patient_id, pass_salt, pass_hash, created_at`;
+const USER_COLS = `id, username, name, role, patient_id, must_change_password, pass_salt, pass_hash, created_at`;
+
+export function generateRandomPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  return Array.from(randomBytes(8))
+    .map((b) => chars[b % chars.length])
+    .join("");
+}
 
 export async function ensureSeedUsers(): Promise<void> {
   const rows = await query<{ count: string }>("SELECT count(*)::text AS count FROM users");
@@ -102,6 +112,7 @@ export async function createUser(input: {
   role: "admin" | "terapeuta" | "paciente";
   password: string;
   patientId?: string;
+  mustChangePassword?: boolean;
 }): Promise<User | null> {
   await ensureSeedUsers();
   if (!input.username.trim() || input.password.length < 6) return null;
@@ -109,8 +120,8 @@ export async function createUser(input: {
   const salt = randomBytes(8).toString("hex");
   const validRole = ["admin", "terapeuta", "paciente"].includes(input.role) ? input.role : "terapeuta";
   const row = await queryOne<UserRow>(
-    `INSERT INTO users (id, username, name, role, patient_id, pass_salt, pass_hash)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
+    `INSERT INTO users (id, username, name, role, patient_id, must_change_password, pass_salt, pass_hash)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING ${USER_COLS}`,
     [
       newId(),
@@ -118,6 +129,7 @@ export async function createUser(input: {
       input.name.trim() || input.username.trim(),
       validRole,
       input.patientId ?? null,
+      input.mustChangePassword ?? false,
       salt,
       makePassword(salt, input.password),
     ]
@@ -131,6 +143,10 @@ export async function getUserByPatientId(patientId: string): Promise<User | unde
     [patientId]
   );
   return row ? toUser(row) : undefined;
+}
+
+export async function setMustChangePassword(id: string, value: boolean): Promise<void> {
+  await query("UPDATE users SET must_change_password = $2 WHERE id = $1", [id, value]);
 }
 
 export async function deleteUser(id: string): Promise<boolean> {

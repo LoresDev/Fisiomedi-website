@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT NOT NULL,
   role TEXT NOT NULL CHECK (role IN ('admin', 'terapeuta', 'paciente')),
   patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
+  must_change_password BOOLEAN NOT NULL DEFAULT false,
   pass_salt TEXT NOT NULL,
   pass_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()

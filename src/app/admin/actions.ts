@@ -13,10 +13,12 @@ import {
   deleteExam,
   deletePatient,
   deleteUser,
+  generateRandomPassword,
   getPatient,
   getUsers,
   getUserByPatientId,
   saveExamFile,
+  setMustChangePassword,
 } from "@/lib/store";
 
 function str(formData: FormData, key: string): string {
@@ -200,23 +202,30 @@ export async function resetPasswordAction(formData: FormData): Promise<void> {
 export async function createPatientAccountAction(formData: FormData): Promise<void> {
   await requireAdmin();
   const patientId = str(formData, "patientId");
-  const username = str(formData, "username");
-  const password = String(formData.get("password") ?? "");
   const patient = await getPatient(patientId);
   if (!patient) redirect(`/admin/pacientes`);
+  // Require DNI to use as username
+  if (!patient.docId || !patient.docId.trim()) {
+    redirect(`/admin/pacientes/${patientId}?error=sin_dni`);
+  }
   // Check if already has account
   const existing = await getUserByPatientId(patientId);
   if (existing) redirect(`/admin/pacientes/${patientId}?error=cuenta`);
+  // Check if DNI is already taken as username
+  const username = patient.docId.trim().toLowerCase();
+  const tempPassword = generateRandomPassword();
   const created = await createUser({
     username,
     name: patient.name,
     role: "paciente",
-    password,
+    password: tempPassword,
     patientId,
+    mustChangePassword: true,
   });
   if (!created) redirect(`/admin/pacientes/${patientId}?error=cuenta`);
   revalidatePath(`/admin/pacientes/${patientId}`);
-  redirect(`/admin/pacientes/${patientId}#cuenta`);
+  // Pass the generated password in the URL so admin can copy it
+  redirect(`/admin/pacientes/${patientId}?nueva_clave=${encodeURIComponent(tempPassword)}#cuenta`);
 }
 
 export async function deletePatientAccountAction(formData: FormData): Promise<void> {
