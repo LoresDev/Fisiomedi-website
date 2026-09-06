@@ -6,13 +6,27 @@ export async function GET(
   _request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
-  if (!(await getSession())) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await context.params;
   const exam = await getExam(id);
   if (!exam) {
     return NextResponse.json({ error: "Examen no encontrado" }, { status: 404 });
+  }
+
+  // Security check for patients
+  if (session.role === "paciente") {
+    if (exam.patientId !== session.patientId) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+    if (exam.status === "rechazado") {
+      return NextResponse.json(
+        { error: "Este examen fue cancelado u observado por la clínica." },
+        { status: 403 }
+      );
+    }
   }
   try {
     const { readFile } = await import("fs/promises");

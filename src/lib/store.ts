@@ -363,6 +363,8 @@ export async function addHistoryEntry(input: Omit<
   return toHistory(row!);
 }
 
+export type ExamStatus = "validado" | "en_revision" | "rechazado";
+
 export interface Exam {
   id: string;
   patientId: string;
@@ -375,6 +377,10 @@ export interface Exam {
   size: number;
   createdBy: string;
   createdAt: string;
+  status: ExamStatus;
+  rejectionReason?: string;
+  validatedBy?: string;
+  validatedAt?: string;
 }
 
 interface ExamRow {
@@ -389,6 +395,10 @@ interface ExamRow {
   size: number;
   created_by: string;
   created_at: Date;
+  status?: string | null;
+  rejection_reason?: string | null;
+  validated_by?: string | null;
+  validated_at?: Date | null;
 }
 
 function toExam(r: ExamRow): Exam {
@@ -404,12 +414,33 @@ function toExam(r: ExamRow): Exam {
     size: Number(r.size),
     createdBy: r.created_by,
     createdAt: r.created_at.toISOString(),
+    status: (r.status as ExamStatus) || "validado",
+    rejectionReason: r.rejection_reason ?? undefined,
+    validatedBy: r.validated_by ?? undefined,
+    validatedAt: r.validated_at ? r.validated_at.toISOString() : undefined,
   };
+}
+
+let examColumnsEnsured = false;
+async function ensureExamColumns(): Promise<void> {
+  if (examColumnsEnsured) return;
+  try {
+    await query(`
+      ALTER TABLE exams ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'validado';
+      ALTER TABLE exams ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
+      ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_by TEXT;
+      ALTER TABLE exams ADD COLUMN IF NOT EXISTS validated_at TIMESTAMPTZ;
+    `);
+    examColumnsEnsured = true;
+  } catch (err) {
+    console.error("ensureExamColumns warning:", err);
+  }
 }
 
 const MAX_EXAM_SIZE = 10 * 1024 * 1024;
 
 export async function getExams(patientId: string): Promise<Exam[]> {
+  await ensureExamColumns();
   const rows = await query<ExamRow>(
     `SELECT * FROM exams WHERE patient_id = $1 ORDER BY created_at DESC`,
     [patientId]
@@ -418,11 +449,13 @@ export async function getExams(patientId: string): Promise<Exam[]> {
 }
 
 export async function getExam(id: string): Promise<Exam | undefined> {
+  await ensureExamColumns();
   const row = await queryOne<ExamRow>(`SELECT * FROM exams WHERE id = $1`, [id]);
   return row ? toExam(row) : undefined;
 }
 
 export async function countExams(): Promise<number> {
+  await ensureExamColumns();
   const rows = await query<{ count: string }>("SELECT count(*)::text AS count FROM exams");
   return Number(rows[0]?.count ?? 0);
 }
@@ -443,10 +476,16 @@ export async function saveExamFile(
   return { fileName, size: file.size, mimeType: file.type || "application/octet-stream" };
 }
 
-export async function addExam(input: Omit<Exam, "id" | "createdAt">): Promise<Exam> {
+export async function addExam(
+  input: Omit<Exam, "id" | "createdAt" | "status"> & { status?: ExamStatus }
+): Promise<Exam> {
+  await ensureExamColumns();
+  const status = input.status || "validado";
+  const validatedAt = status === "validado" ? new Date() : null;
+  const validatedBy = status === "validado" ? input.createdBy : null;
   const row = await queryOne<ExamRow>(
-    `INSERT INTO exams (id, patient_id, title, exam_date, notes, file_name, original_name, mime_type, size, created_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    `INSERT INTO exams (id, patient_id, title, exam_date, notes, file_name, original_name, mime_type, size, created_by, status, validated_by, validated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      RETURNING *`,
     [
       newId(),
@@ -459,9 +498,38 @@ export async function addExam(input: Omit<Exam, "id" | "createdAt">): Promise<Ex
       input.mimeType,
       input.size,
       input.createdBy,
+      status,
+      validatedBy,
+      validatedAt,
     ]
   );
   return toExam(row!);
+}
+
+export async function updateExamStatus(
+  id: string,
+  status: ExamStatus,
+  opts?: { rejectionReason?: string; validatedBy?: string }
+): Promise<boolean> {
+  await ensureExamColumns();
+  const validatedAt = status === "validado" ? new Date() : null;
+  const result = await query(
+    `UPDATE exams
+     SET status = $2,
+         rejection_reason = $3,
+         validated_by = $4,
+         validated_at = $5
+     WHERE id = $1
+     RETURNING id`,
+    [
+      id,
+      status,
+      emptyToNull(opts?.rejectionReason),
+      emptyToNull(opts?.validatedBy),
+      validatedAt,
+    ]
+  );
+  return result.length > 0;
 }
 
 export async function deleteExam(id: string): Promise<boolean> {

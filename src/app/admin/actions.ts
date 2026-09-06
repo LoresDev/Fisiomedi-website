@@ -19,6 +19,8 @@ import {
   getUserByPatientId,
   saveExamFile,
   setMustChangePassword,
+  updateExamStatus,
+  type ExamStatus,
 } from "@/lib/store";
 
 function str(formData: FormData, key: string): string {
@@ -100,6 +102,9 @@ export async function uploadExamAction(formData: FormData): Promise<void> {
   const patientId = str(formData, "patientId");
   const title = str(formData, "title");
   const file = formData.get("file");
+  const statusInput = str(formData, "status") as ExamStatus;
+  const status: ExamStatus = statusInput === "en_revision" ? "en_revision" : "validado";
+
   if (!patientId || !title || !(file instanceof File) || !(await getPatient(patientId))) {
     redirect(`/admin/pacientes/${patientId}?error=examen`);
   }
@@ -117,8 +122,29 @@ export async function uploadExamAction(formData: FormData): Promise<void> {
     mimeType: saved.mimeType,
     size: saved.size,
     createdBy: session.name,
+    status,
   });
   revalidatePath(`/admin/pacientes/${patientId}`);
+  revalidatePath("/mi-cuenta");
+  redirect(`/admin/pacientes/${patientId}#examenes`);
+}
+
+export async function updateExamStatusAction(formData: FormData): Promise<void> {
+  const session = await requireSession();
+  const id = str(formData, "id");
+  const patientId = str(formData, "patientId");
+  const status = str(formData, "status") as ExamStatus;
+  const rejectionReason = str(formData, "rejectionReason") || undefined;
+
+  if (["validado", "en_revision", "rechazado"].includes(status)) {
+    await updateExamStatus(id, status, {
+      rejectionReason: status === "rechazado" ? rejectionReason : undefined,
+      validatedBy: status === "validado" ? session.name : undefined,
+    });
+  }
+
+  revalidatePath(`/admin/pacientes/${patientId}`);
+  revalidatePath("/mi-cuenta");
   redirect(`/admin/pacientes/${patientId}#examenes`);
 }
 
@@ -128,6 +154,7 @@ export async function deleteExamAction(formData: FormData): Promise<void> {
   const patientId = str(formData, "patientId");
   await deleteExam(id);
   revalidatePath(`/admin/pacientes/${patientId}`);
+  revalidatePath("/mi-cuenta");
   redirect(`/admin/pacientes/${patientId}#examenes`);
 }
 

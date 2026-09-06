@@ -7,6 +7,7 @@ import {
   deletePatientAction,
   deletePatientAccountAction,
   uploadExamAction,
+  updateExamStatusAction,
 } from "../../../actions";
 import { getAppointments } from "@/lib/appointments";
 import { getExams, getHistory, getPatient, getUserByPatientId } from "@/lib/store";
@@ -147,7 +148,10 @@ export default async function FichaPacientePage({
 
         <section id="examenes" className="rounded-2xl bg-white border border-slate-200 shadow-sm">
           <header className="border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Exámenes médicos</h2>
+            <div>
+              <h2 className="font-semibold text-slate-900">Exámenes y Resultados</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Sube, valida o rechaza resultados médicos del paciente</p>
+            </div>
             <span className="text-xs text-slate-400">{exams.length} archivo(s)</span>
           </header>
 
@@ -162,6 +166,17 @@ export default async function FichaPacientePage({
                 <span className="mb-1 block text-xs text-slate-500">Fecha del examen</span>
                 <input type="date" name="examDate" className={input} />
               </label>
+              <label className="block">
+                <span className="mb-1 block text-xs text-slate-500">Estado inicial</span>
+                <select name="status" className={input} defaultValue="validado">
+                  <option value="validado">Validado (listo para descarga del paciente)</option>
+                  <option value="en_revision">En revisión (borrador interno)</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-xs text-slate-500">Observaciones</span>
+                <input type="text" name="notes" placeholder="Notas clínicas u observaciones" className={input} />
+              </label>
               <label className="block sm:col-span-2">
                 <span className="mb-1 block text-xs text-slate-500">Archivo (PDF o imagen, máx. 10 MB) *</span>
                 <input
@@ -169,47 +184,126 @@ export default async function FichaPacientePage({
                   name="file"
                   required
                   accept=".pdf,image/*"
-                  className="w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700"
+                  className="w-full text-sm file:mr-3 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-white hover:file:bg-blue-700 cursor-pointer"
                 />
               </label>
-              <label className="block sm:col-span-2">
-                <span className="mb-1 block text-xs text-slate-500">Observaciones</span>
-                <input type="text" name="notes" className={input} />
-              </label>
             </div>
-            <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
+            <button className="rounded-full bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 shadow-sm transition-all">
               Subir examen
             </button>
           </form>
 
-          <ul className="divide-y divide-slate-100 max-h-[380px] overflow-y-auto">
+          <ul className="divide-y divide-slate-100 max-h-[480px] overflow-y-auto">
             {exams.length === 0 ? (
               <li className="px-6 py-10 text-center text-sm text-slate-400">
                 Sin exámenes archivados.
               </li>
             ) : (
               exams.map((e) => (
-                <li key={e.id} className="px-6 py-4 flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">{e.title}</p>
-                    <p className="truncate text-xs text-slate-400">
+                <li key={e.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="truncate text-sm font-semibold text-slate-800">{e.title}</p>
+                      {e.status === "validado" && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-2xs font-semibold text-green-700">
+                          ✓ Validado
+                        </span>
+                      )}
+                      {e.status === "en_revision" && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-2xs font-semibold text-amber-800">
+                          ⏳ En revisión
+                        </span>
+                      )}
+                      {e.status === "rechazado" && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-2xs font-semibold text-red-700">
+                          ✕ Rechazado / Erróneo
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="truncate text-xs text-slate-400 mt-1">
                       {e.originalName} · {formatSize(e.size)}
-                      {e.examDate ? ` · ${e.examDate}` : ""}
+                      {e.examDate ? ` · Fecha: ${e.examDate}` : ""}
                     </p>
-                    {e.notes && <p className="mt-1 text-xs text-slate-500">{e.notes}</p>}
-                    <p className="text-xs text-slate-400">Subido por {e.createdBy}</p>
+                    {e.notes && <p className="mt-1 text-xs text-slate-600 italic">{e.notes}</p>}
+                    
+                    {e.status === "rechazado" && e.rejectionReason && (
+                      <div className="mt-2 rounded-lg bg-red-50 border border-red-200 p-2 text-xs text-red-800">
+                        <strong>Motivo del rechazo:</strong> {e.rejectionReason}
+                      </div>
+                    )}
+
+                    <p className="text-2xs text-slate-400 mt-1">
+                      Subido por {e.createdBy}
+                      {e.validatedBy && e.status === "validado" ? ` · Validado por ${e.validatedBy}` : ""}
+                    </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+
+                  {/* Actions */}
+                  <div className="flex shrink-0 items-center gap-1.5 self-end sm:self-start mt-2 sm:mt-0">
                     <a
                       href={`/api/exams/${e.id}`}
-                      className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
                     >
                       Descargar
                     </a>
+
+                    {/* Validar action if not currently validated */}
+                    {e.status !== "validado" && (
+                      <form action={updateExamStatusAction}>
+                        <input type="hidden" name="id" value={e.id} />
+                        <input type="hidden" name="patientId" value={patient.id} />
+                        <input type="hidden" name="status" value="validado" />
+                        <button
+                          title="Aprobar y validar resultado para el paciente"
+                          className="rounded-full border border-green-300 bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 hover:bg-green-100 transition-colors"
+                        >
+                          ✓ Validar
+                        </button>
+                      </form>
+                    )}
+
+                    {/* Rechazar action if not currently rejected */}
+                    {e.status !== "rechazado" && (
+                      <details className="relative">
+                        <summary className="cursor-pointer list-none rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-100 transition-colors">
+                          Rechazar...
+                        </summary>
+                        <div className="absolute right-0 top-full mt-1 z-30 w-72 rounded-xl bg-white border border-slate-200 p-3 shadow-xl space-y-2 text-left">
+                          <p className="text-xs font-semibold text-slate-800">Rechazar / Anular resultado</p>
+                          <p className="text-2xs text-slate-500">Indica la razón por la cual este examen es errado:</p>
+                          <form action={updateExamStatusAction} className="space-y-2">
+                            <input type="hidden" name="id" value={e.id} />
+                            <input type="hidden" name="patientId" value={patient.id} />
+                            <input type="hidden" name="status" value="rechazado" />
+                            <input
+                              type="text"
+                              name="rejectionReason"
+                              required
+                              placeholder="Ej: Archivo erróneo, datos no coinciden..."
+                              className="w-full text-xs rounded-lg border border-slate-300 px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-red-500"
+                            />
+                            <button
+                              type="submit"
+                              className="w-full rounded-lg bg-red-600 py-1.5 text-xs font-semibold text-white hover:bg-red-700"
+                            >
+                              Confirmar rechazo
+                            </button>
+                          </form>
+                        </div>
+                      </details>
+                    )}
+
+                    {/* Delete button (permanent erase) */}
                     <form action={deleteExamAction}>
                       <input type="hidden" name="id" value={e.id} />
                       <input type="hidden" name="patientId" value={patient.id} />
-                      <button className="rounded-full border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50">
+                      <button
+                        title="Eliminar permanentemente del servidor"
+                        className="rounded-full border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors"
+                      >
                         Borrar
                       </button>
                     </form>

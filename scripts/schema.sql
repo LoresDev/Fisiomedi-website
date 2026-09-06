@@ -46,6 +46,10 @@ CREATE TABLE IF NOT EXISTS exams (
   mime_type TEXT NOT NULL,
   size INTEGER NOT NULL,
   created_by TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'validado' CHECK (status IN ('validado', 'en_revision', 'rechazado')),
+  rejection_reason TEXT,
+  validated_by TEXT,
+  validated_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_exams_patient ON exams(patient_id);
