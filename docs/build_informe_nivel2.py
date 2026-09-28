@@ -195,8 +195,8 @@ info_tbl.autofit = False
 cover_data = [
     ("Docente Supervisor:", "JEAN CARLOS LAURENTE CHACON"),
     ("Ciclo / Aula / Semestre:", "Ciclo 3 · Aula 5590 · Semestre 2026 - 03"),
-    ("Coordinador de Proyecto:", "i202513002 - Kevin Usnayo Navarro"),
-    ("Integrantes del Equipo:", "• I202514348 - Jennifer Milagros Raquel Alarcón Calixto\n• i202513734 - Pedro Fernández Lores\n• i202514654 – Aldavic Jerymoth Zambrano Muñoz\n• i202513856 - Emilio Josué Solis Fernández"),
+    ("Coordinador de Proyecto:", "i202513734 - Pedro Fernández Lores"),
+    ("Integrantes del Equipo:", "• i202513734 - Pedro Fernández Lores\n• I202514348 - Jennifer Milagros Raquel Alarcón Calixto\n• i202513856 - Emilio Josué Solis Fernández"),
     ("Empresa / Caso de Estudio:", "FISIOMEDI - Centro Especializado de Fisioterapia y Rehabilitación"),
     ("Lugar y Fecha:", "Lima, Perú · Septiembre de 2026")
 ]
@@ -438,12 +438,12 @@ add_p(
 # Insert Organigrama Diagram
 add_figure(os.path.join(diag_dir, "organigrama_equipo.png"), "Estructura Organizacional del Equipo de Proyecto (Metodología RUP / Agile)", width=Inches(6.0))
 
-# Table 2: Roles & Profiles
-role_tbl = doc.add_table(rows=6, cols=3)
+# Table 2: Roles & Profiles (3 integrantes)
+role_tbl = doc.add_table(rows=4, cols=3)
 role_tbl.alignment = WD_TABLE_ALIGNMENT.CENTER
 role_tbl.autofit = False
 
-role_widths = [Inches(2.0), Inches(0.8), Inches(3.7)]
+role_widths = [Inches(2.2), Inches(0.7), Inches(3.6)]
 headers_role = ["Rol en el Proyecto", "Cant.", "Perfil del Puesto y Responsabilidades"]
 
 for i, h in enumerate(headers_role):
@@ -456,11 +456,9 @@ for i, h in enumerate(headers_role):
     r.font.name = "Arial"; r.font.size = Pt(8); r.font.bold = True; r.font.color.rgb = RGBColor(255, 255, 255)
 
 data_roles = [
-    ("Jefe de Proyecto / Scrum Master", "1", "Coordinación general, cronograma de Gantt, gestión de riesgos y comunicación con el cliente."),
-    ("Analista de Negocio & RUP", "1", "Modelado de procesos de negocio, especificación de casos de uso del negocio (CUN) y análisis SEPTE."),
-    ("Arquitecto de Software & Base de Datos", "1", "Diseño del stack tecnológico Next.js, esquema relacional PostgreSQL, normalización y optimización de índices."),
-    ("Desarrolladora Frontend & UI/UX", "1", "Diseño visual accesible en Tailwind CSS, maquetación responsiva, portal del paciente y componentes interactivos."),
-    ("Ingeniero de Backend, QA & Seguridad", "1", "Implementación de Server Actions, protocolos de cifrado PBKDF2/Salt, validaciones de subida y pruebas técnicas.")
+    ("Jefe de Proyecto & Arquitecto de Software", "1", "Pedro Fernández Lores: Coordinación general del proyecto, cronograma de Gantt, diseño del stack Next.js 16, esquema relacional PostgreSQL en Neon y despliegue en Vercel Cloud."),
+    ("Analista de Negocio & Diseñadora Frontend / UI", "1", "Jennifer Milagros Raquel Alarcón Calixto: Modelado RUP (Casos de Uso del Negocio CUN), especificación de requerimientos, diseño UI/UX responsivo en Tailwind CSS y desarrollo del Portal del Paciente."),
+    ("Ingeniero de Backend, Seguridad & QA", "1", "Emilio Josué Solis Fernández: Implementación de Server Actions, protocolos de cifrado PBKDF2/Salt, validaciones de subida de archivos médicos (resonancias/rayos X) y pruebas técnicas.")
 ]
 
 for row_idx, rdata in enumerate(data_roles, start=1):
@@ -597,11 +595,30 @@ add_bullet("Swimlane (Carriles de Responsabilidad):", "Diagrama de actividades d
 add_bullet("Resonancia Magnética (RMN):", "Estudio de imágenes diagnósticas de alta sensibilidad para evaluar lesiones en ligamentos, tendones y hernias discales en columna.")
 
 # Save Document
-doc.save(out_docx_web)
-print("Saved Informe Nivel 2 to web docs:", out_docx_web)
-
+saved_web = False
 try:
-    shutil.copy2(out_docx_web, out_docx_root)
-    print("Copied Informe Nivel 2 to root docs:", out_docx_root)
+    doc.save(out_docx_web)
+    print("Saved Informe Nivel 2 to web docs:", out_docx_web)
+    saved_web = True
+except PermissionError:
+    print(f"File {out_docx_web} is currently locked by Word. Saving to alternate filename.")
+
+out_docx_web_3 = os.path.join(web_docs_dir, "Informe_Proyecto_Fisiomedi_Nivel_2_3Integrantes.docx")
+doc.save(out_docx_web_3)
+print("Saved Informe Nivel 2 (3 integrantes) to web docs:", out_docx_web_3)
+
+# Copy to root docs
+out_docx_root_3 = r"c:\Users\user\Documents\Fisiomedi\docs\Informe_Proyecto_Fisiomedi_Nivel_2_3Integrantes.docx"
+try:
+    shutil.copy2(out_docx_web_3, out_docx_root_3)
+    print("Copied to root docs:", out_docx_root_3)
 except Exception as e:
     print("Copy error:", e)
+
+if saved_web:
+    try:
+        shutil.copy2(out_docx_web, out_docx_root)
+        print("Copied to root docs:", out_docx_root)
+    except Exception as e:
+        print("Copy error for root docs:", e)
+

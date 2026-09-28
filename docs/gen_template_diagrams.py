@@ -25,13 +25,11 @@ def draw_role_box(x, y, w, h, role, name, color="#1e3a8a", bg="#eff6ff"):
     ax.text(x + w/2, y + (h - 0.38)/2, name, fontsize=7, color="#1e293b", ha="center", va="center")
 
 # Jefe de Proyecto (Top)
-draw_role_box(4.0, 4.4, 3.0, 0.9, "Jefe de Proyecto / Scrum Master", "Kevin Usnayo Navarro\n(Coord. General & Planificación)")
+draw_role_box(3.8, 4.4, 3.4, 0.95, "Jefe de Proyecto & Arquitecto de Software", "Pedro Fernández Lores\n(Coord. General, Next.js & Neon BD)")
 
-# 4 Roles below
-draw_role_box(0.5, 2.5, 2.2, 0.95, "Analista de Negocio & RUP", "Aldavic Zambrano Muñoz\n(Modelado CUN & Requerimientos)", "#2563eb", "#f0fdf4")
-draw_role_box(3.1, 2.5, 2.2, 0.95, "Arquitecto de Software & BD", "Pedro Fernández Lores\n(Next.js & PostgreSQL Neon)", "#2563eb", "#f0fdf4")
-draw_role_box(5.7, 2.5, 2.2, 0.95, "Desarrolladora Frontend & UI", "Jennifer Alarcón Calixto\n(Tailwind CSS & Portal Paciente)", "#2563eb", "#f0fdf4")
-draw_role_box(8.3, 2.5, 2.2, 0.95, "Ingeniero Backend & QA", "Emilio Solis Fernández\n(Server Actions & Pruebas)", "#2563eb", "#f0fdf4")
+# 2 Key Specialist Roles below
+draw_role_box(1.2, 2.5, 3.8, 0.95, "Analista de Negocio & Diseñadora Frontend", "Jennifer Milagros Raquel Alarcón Calixto\n(Requerimientos RUP & Portal Paciente)", "#2563eb", "#f0fdf4")
+draw_role_box(6.0, 2.5, 3.8, 0.95, "Ingeniero de Backend, QA & Seguridad", "Emilio Josué Solis Fernández\n(Server Actions, Cifrado PBKDF2 & Pruebas)", "#2563eb", "#f0fdf4")
 
 # External Advisors below
 draw_role_box(1.8, 0.8, 3.4, 0.9, "Asesor Metodológico y Docente", "Prof. Jean Carlos Laurente Chacon\n(Docente Supervisor CIBERTEC)", "#475569", "#f8fafc")
@@ -39,12 +37,10 @@ draw_role_box(5.8, 0.8, 3.4, 0.9, "Stakeholder / Dirección Clínica", "Lic. Fis
 
 # Connecting lines
 ax.plot([5.5, 5.5], [4.4, 3.8], color="#334155", lw=1.2)
-ax.plot([1.6, 9.4], [3.8, 3.8], color="#334155", lw=1.2)
+ax.plot([3.1, 7.9], [3.8, 3.8], color="#334155", lw=1.2)
 
-ax.plot([1.6, 1.6], [3.8, 3.45], color="#334155", lw=1.2)
-ax.plot([4.2, 4.2], [3.8, 3.45], color="#334155", lw=1.2)
-ax.plot([6.8, 6.8], [3.8, 3.45], color="#334155", lw=1.2)
-ax.plot([9.4, 9.4], [3.8, 3.45], color="#334155", lw=1.2)
+ax.plot([3.1, 3.1], [3.8, 3.45], color="#334155", lw=1.2)
+ax.plot([7.9, 7.9], [3.8, 3.45], color="#334155", lw=1.2)
 
 ax.plot([5.5, 5.5], [2.5, 2.0], color="#94a3b8", lw=1.2, linestyle="--")
 ax.plot([3.5, 7.5], [2.0, 2.0], color="#94a3b8", lw=1.2, linestyle="--")

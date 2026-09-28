@@ -34,7 +34,7 @@ ax.text(1.0, 4.05, "(*) Fisioterapia Traumatologica (S/ 70 - 45 min)\n  ( ) Tera
 box2 = patches.FancyBboxPatch((5.2, 3.4), 4.0, 1.25, boxstyle="round,pad=0.08", facecolor="#f0fdf4", edgecolor="#22c55e", lw=1.2)
 ax.add_patch(box2)
 ax.text(5.4, 4.35, "Paso 2: Especialista de Preferencia", fontsize=8, fontweight="bold", color="#15803d")
-ax.text(5.4, 4.05, "(*) Cualquier especialista disponible (Asignacion automatica)\n  ( ) Dr. Pedro Fernandez (Especialista en Columna)\n  ( ) Lic. Jennifer Alarcon (Fisioterapeuta Post-operatorio)\n  ( ) Lic. Kevin Usnayo (Rehabilitacion Deportiva)", fontsize=7, color="#334155")
+ax.text(5.4, 4.05, "(*) Cualquier especialista disponible (Asignacion automatica)\n  ( ) Dr. Pedro Fernandez (Especialista en Columna)\n  ( ) Lic. Jennifer Alarcon (Fisioterapeuta Post-operatorio)\n  ( ) Lic. Emilio Solis (Rehabilitacion Deportiva)", fontsize=7, color="#334155")
 
 box3 = patches.FancyBboxPatch((0.8, 1.9), 4.0, 1.3, boxstyle="round,pad=0.08", facecolor="#fefce8", edgecolor="#eab308", lw=1.2)
 ax.add_patch(box3)
