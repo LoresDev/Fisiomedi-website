@@ -1,0 +1,204 @@
+[0] (Title): 
+[1] (Normal): 
+[2] (Normal): 
+[3] (Normal): 
+[4] (Normal): 
+[5] (Normal): 
+[6] (Title): 
+[7] (Title): 
+[8] (Normal): 
+[9] (Title): INTRODUCCIÓN 
+[10] (Normal): (iniciar en la línea 4)
+[11] (Normal): 
+[12] (Normal): Redacte una introducción narrativa, el texto debe ser fluido (evite el uso de viñetas o listas), integrando los siguientes ejes:
+[13] (Normal): Contexto y Justificación Estratégica: Inicie presentando el tema central de su proyecto. No se limite a lo técnico; explique cómo esta solución responde a un entorno complejo (conecte aquí con los hallazgos de su análisis SEPTE). Indique el valor agregado que el proyecto aporta a la organización para enfrentar retos sociales, económicos o legales.
+[14] (Normal): Alcance y Escalabilidad: Describa la solución técnica detallando hasta dónde llega el proyecto. Es fundamental mencionar si la solución tiene la capacidad de crecer en el futuro (escalabilidad) y cómo se acopla o integra con los sistemas o procesos que la empresa ya tiene en funcionamiento.
+[15] (Normal): Estructura del Informe: Guíe al lector a través de los tres pilares de este documento:
+[16] (Normal): En el Capítulo 1, se profundiza en el diagnóstico situacional y el análisis de factores externos.
+[17] (Normal): En el Capítulo 2, se detalla el diseño fundamentado de la solución, estableciendo objetivos con métricas e indicadores de gestión.
+[18] (Normal): En el Capítulo 3, se expone la ejecución técnica, los resultados obtenidos y la evaluación de las tecnologías seleccionadas.
+[19] (Normal): Fundamentación Tecnológica: Finalice explicando que las herramientas elegidas (software, hardware o servicios cloud) no fueron seleccionadas al azar, sino mediante una evaluación técnica rigurosa que priorizó criterios de eficiencia, costo y seguridad.
+[20] (Normal): Nota: Se espera un lenguaje técnico-profesional. Las introducciones que se limiten a copiar y pegar estas instrucciones o que utilicen frases genéricas serán penalizadas. Cada párrafo debe reflejar la realidad particular de su caso de estudio.
+[21] (Normal): 
+[22] (Normal): 
+[23] (Normal): 
+[24] (Normal): 
+[25] (Normal): 
+[26] (Normal): 
+[27] (Normal): 
+[28] (Normal): 
+[29] (Normal): 
+[30] (Normal): 
+[31] (Normal): 
+[32] (Normal): 
+[33] (Normal): 
+[34] (Normal): 
+[35] (Normal): 
+[36] (Normal): 
+[37] (Normal): 
+[38] (Normal): 
+[39] (Normal): 
+[40] (List Paragraph): CAPÍTULO 1
+[41] (List Paragraph): DIAGNÓSTICO DEL PROBLEMA
+[42] (List Paragraph): 
+[43] (List Paragraph): 1.1.- Diagnóstico situacional
+[44] (Normal): [El equipo debe analizar las necesidades, capacidades y recursos internos del área de estudio. Se debe profundizar en cómo la infraestructura o procesos actuales limitan el crecimiento de la organización.
+[45] (Normal): Fundamentación: Debe incluir datos, gráficos propios o citas de fuentes verificables que demuestren el estado actual (línea base).
+[46] (Normal): Enfoque: Identificar no solo fallas, sino potencialidades (recursos que la empresa ya tiene y que se pueden aprovechar mejor).]
+[47] (List Paragraph): 
+[48] (Normal): 1.2.- Adversidades potenciales reportadas
+[49] (Normal): 
+[50] (Normal): Basándose en los reportes de TI, bitácoras de errores o entrevistas con especialistas, enumere las dificultades críticas detectadas.
+[51] (Normal): a. Se ha detectado que... (describir la falla técnica o vulnerabilidad).
+[52] (Normal): b. Esto permite/ocasiona que... (describir la consecuencia negativa en la operación).
+[53] (Normal): 
+[54] (Normal): Nota: Estas adversidades deben ser la base para justificar por qué la solución técnica es urgente.
+[55] (Normal): 
+[56] (Normal): 1.3.- Análisis SEPTE
+[57] (Normal): 1.3.1.- Aspecto social.-
+[58] (Normal): [Párrafo: Análisis de la variable social. Indicar a pie de página las fuentes que se han utilizado. Incluir gráficos que evidencien la información utilizada en el análisis. Ejemplo: …el 96% de las…]
+[59] (Normal): 
+[60] (Normal): 1.3.2.- Aspecto económico.- 
+[61] (Normal): [Párrafo: Análisis de la variable económica. Indicar a pie de página las fuentes que se han utilizado. Incluir gráficos que evidencien la información utilizada en el análisis. Ejemplo: …el 96% de las…]
+[62] (Normal): 
+[63] (Normal): 1.3.3.- Aspecto político.- 
+[64] (Normal): [Párrafo: Análisis de la variable política. Indicar a pie de página las fuentes que se han utilizado. Incluir gráficos que evidencien la información utilizada en el análisis. Ejemplo: …el 96% de las…]
+[65] (Normal): 
+[66] (Normal): 1.3.4.- Aspecto tecnológico.- 
+[67] (Normal): Identifique tendencias (IA, Cloud, Ciberseguridad) que hacen que la solución actual sea obsoleta o que la nueva sea necesaria.
+[68] (Normal): 
+[69] (Normal): 1.3.5.- Aspecto ecológico.- 
+[70] (Normal): Evalúe el impacto ambiental (huella de carbono, eficiencia energética de servidores, disposición de residuos electrónicos).
+[71] (Normal): 
+[72] (Normal): 
+[73] (Normal): 1.4.- Justificación del Proyecto
+[74] (Normal): De acuerdo al diagnóstico situacional y el análisis SEPTE realizado, la necesidad de ejecutar el presente proyecto se justifica por:
+[75] (List Paragraph): Se ……………..
+[76] (List Paragraph): Permita ……………
+[77] (Normal): 
+[78] (Normal): Basándose en el Diagnóstico Situacional (1.1) y el Análisis SEPTE (1.3), redacte los argumentos que validan la ejecución de este proyecto. La justificación debe demostrar que la solución propuesta no es solo un deseo técnico, sino una respuesta estratégica a una necesidad real.
+[79] (Normal): a. Justificación Técnica y Operativa: Explique cómo el proyecto resolverá las deficiencias internas detectadas. (Ejemplo: "Se justifica por la necesidad de migrar a una arquitectura en la nube que garantice la alta disponibilidad del servicio, eliminando las caídas de sistema reportadas en el diagnóstico").
+[80] (Normal): b. Justificación Estratégica y de Entorno: Explique cómo el proyecto alinea a la organización con las tendencias o normativas externas. (Ejemplo: "Permitirá que la empresa cumpla con los estándares de ciberseguridad exigidos por la normativa vigente citada en el aspecto político del SEPTE, evitando posibles sanciones y mejorando la confianza del cliente").
+[81] (Normal): 
+[82] (Normal): 
+[83] (Normal): 
+[84] (Normal): 
+[85] (Normal): 
+[86] (Normal): 
+[87] (Normal): 
+[88] (Normal): 
+[89] (Normal): CAPÍTULO 2
+[90] (Normal): DESCRIPCIÓN DEL PROYECTO
+[91] (List Paragraph): 
+[92] (List Paragraph): Se presenta una descripción técnica y estratégica de la solución. En este nivel, se espera que el equipo no solo nombre las herramientas, sino que justifique brevemente su elección basándose en la eficiencia y seguridad.
+[93] (List Paragraph): Descripción General: Resumen ejecutivo de la solución y cómo resuelve el problema del Capítulo 1.
+[94] (List Paragraph): Arquitectura y Stack Tecnológico: Detallar las herramientas de desarrollo (Frontend/Backend), motores de base de datos, infraestructura (nube/física) y frameworks utilizados.
+[95] (List Paragraph): Seguridad y Estándares: Precisar los protocolos de seguridad (encriptación, firewalls, niveles de acceso, certificados SSL, etc.) y normativas técnicas que seguirá el proyecto.
+[96] (List Paragraph): Modelo de Sostenibilidad (Ingresos/Beneficios): Mencionar cómo el proyecto se financia o genera retornos.
+[97] (List Paragraph): Ejemplo: Venta de licencias, ahorro operativo proyectado, suscripciones (SaaS), o monetización por servicios adicionales.
+[98] (List Paragraph): 
+[99] (Normal): 2.1.- Objetivos
+[100] (Normal): Están constituidos por la situación o el estado deseado que se pretende alcanzar con la realización del mismo. Los objetivos deben ser cuantificables y bajo la metodología SMART. Se recomienda incluir al menos un objetivo relacionado con la disponibilidad o rendimiento técnico y otro con la satisfacción del usuario o ahorro económico.
+[101] (Normal): 
+[102] (Normal): Ejemplo: 
+[103] (Normal): 
+[104] (Normal): 2.2.- Alcance
+[105] (Normal): El presente proyecto comprenderá las fases de ………………
+[106] (Normal): Asimismo, el proyecto abarcará hasta la etapa de ………..
+[107] (Normal): 
+[108] (List Paragraph): Fases del Proyecto: El proyecto comprenderá las fases de: Diagnóstico y Análisis, Diseño de Arquitectura/Topología, Configuración del Core de la Solución y Pruebas Unitarias/Técnicas.
+[109] (List Paragraph): Límites de la Solución: El proyecto abarcará hasta la etapa de Prototipo Funcional o Entorno de Pruebas
+[110] (Normal): 
+[111] (Normal): 2.3.- Ventaja Comparativa
+[112] (Normal): 
+[113] (Normal): El equipo debe realizar un análisis comparativo entre la solución propuesta y al menos dos soluciones similares existentes en el mercado (pueden ser software comercial, herramientas de código abierto o procesos manuales actuales). El objetivo es demostrar por qué su proyecto es la opción más viable y qué valor agregado ofrece.
+[114] (Normal): Consideraciones para la tabla:
+[115] (Normal): Funcionalidades: Deben ser las mismas que definieron en el Alcance (2.2).
+[116] (Normal): Solución A y B: Deben ser competidores reales o alternativas que el cliente podría elegir en lugar de su proyecto.
+[117] (Normal): Criterios de Evaluación: Además de funciones técnicas, pueden incluir costos, facilidad de uso, seguridad o escalabilidad.
+[118] (Normal): Matriz de Benchmarking
+[119] (Normal): 
+[120] (Normal): Leyenda de evaluación:
+[121] (Normal): ✅ Símbolo de cumplimiento: Indica que la solución posee la característica de forma nativa.
+[122] (Normal): ❌ Símbolo de incumplimiento: Indica que la solución no cuenta con dicha función o el proceso actual no la permite.
+[123] (Normal): Descripciones Cualitativas: En atributos como "Costo" o "Seguridad", se usa términos como Alto, Bajo, Optimizado, Estándar o Alta para diferenciar el nivel de beneficio.
+[124] (Normal): 
+[125] (Normal): 2.4.- Ubicación
+[126] (Normal): Se deberá Defina con precisión el entorno donde se implementará la solución. En este nivel, es obligatorio detallar tanto la ubicación organizacional como la arquitectura de alojamiento tecnológica.
+[127] (Normal): 
+[128] (Normal): Organización y Área: Indique el nombre de la empresa, institución o comunidad, especificando el departamento o área administrativa donde el proyecto tendrá impacto directo (ejemplo:. Departamento de TI, Área de Recursos Humanos, Almacén Central).
+[129] (Normal): Espacio Físico: Describa la ubicación geográfica de la implementación (Ciudad, sede o sucursal específica).
+[130] (Normal): Espacio Virtual / Entorno Tecnológico: Especifique dónde se alojará la solución propuesta.
+[131] (Normal): Si es Local: Detalle las características del servidor físico o estación de trabajo.
+[132] (Normal): Si es en la Nube: Indique el proveedor (AWS, Azure, Google Cloud, etc.) y el tipo de servicio (IaaS, PaaS, SaaS) o si se trata de un entorno virtualizado local (VLAN específica, máquina virtual).
+[133] (Normal): 
+[134] (Normal): 2.5.- Organización del Proyecto
+[135] (Normal): 
+[136] (Normal): Se indicará la organización a cargo del desarrollo del presente proyecto. El equipo debe definir la estructura organizacional de la consultora o empresa creada para este proyecto. Para ello, debe presentar un organigrama que detalle la jerarquía y los roles asignados a cada integrante y colaboradores externos.
+[137] (Normal): Organigrama del Proyecto: Inserte un gráfico (similar al ejemplo) que represente la cadena de mando y las áreas de especialidad.
+[138] (Normal): Descripción de Roles: Debajo del gráfico, explique brevemente las funciones de cada rol en el contexto de su proyecto.
+[139] (Normal): 
+[140] (Normal): Ejemplo de Estructura Organizacional:
+[141] (Normal): Nota para el equipo: Aunque el grupo sea de 3 o 4 personas, un integrante puede asumir un rol principal (ejemplo:. Jefe de Proyecto) y coordinar las funciones de los demás. Es vital que existan roles diferenciados para asegurar la calidad técnica, financiera y legal del desarrollo.
+[142] (Normal): 
+[143] (Normal): 
+[144] (Normal): 
+[145] (Normal): 
+[146] (Normal): 
+[147] (Normal): 
+[148] (Normal): 2.6.- Beneficiarios Directos e Indirectos
+[149] (Normal): Los beneficiarios del proyecto son las personas que obtendrán algún tipo de beneficio de la implementación del mismo, pudiéndose identificar dos tipos: directos e indirectos.
+[150] (Normal): 
+[151] (Normal): Los beneficiarios directos son aquellos que hacen uso directo de la solución o producto desarrollado, y por consiguiente, se benefician de su implementación.
+[152] (Normal): 
+[153] (Normal): Los beneficiarios indirectos son, con frecuencia, pero no siempre, las personas que se encuentran en el interior de la zona de influencia del proyecto y que se ven impactadas por el uso del mismo. Estas son, por ejemplo, los desarrolladores del proyecto, los proveedores de materia prima u otros bienes y servicios, etc.
+[154] (Normal): 
+[155] (List Paragraph): CAPÍTULO 3
+[156] (List Paragraph): DESARROLLO DEL PROYECTO
+[157] (Normal): 
+[158] (Normal): 3.1.- CRONOGRAMA DE ACTIVIDADES
+[159] (Normal): 
+[160] (Normal): Presente el cronograma detallado de la ejecución del proyecto. Se recomienda utilizar un Diagrama de Gantt donde se visualicen las fases de: Análisis, Diseño, Configuración/Desarrollo y Pruebas. Debe figurar el tiempo invertido en cada actividad según los objetivos planteados.
+[161] (Normal): 
+[162] (Normal): 3.2 PRODUCTOS Y ENTREGABLES
+[163] (Normal): Presenta los productos desarrollados para el proyecto según el alcance del proyecto. 
+[164] (Normal):  
+[165] (Normal): 
+[166] (Normal): Se debe adjuntar la evidencia técnica del desarrollo. El contenido estará alineado al Alcance (2.2) definido previamente.
+[167] (Normal): A. Producto: Presentar de forma ordenada los siguientes elementos técnicos:
+[168] (Normal): Diagramas de Análisis y Diseño: Incluir diagramas UML (Casos de Uso, Clases, Secuencia) o diagramas de red/arquitectura (Topología, Modelado de datos).
+[169] (Normal): Módulos y Componentes: Capturas de pantalla o descripción de los módulos desarrollados (Frontend, Backend, configuración de servidores o servicios Cloud).
+[170] (Normal): Archivos de Configuración: Fragmentos de código fuente relevantes, scripts de creación de base de datos o archivos de configuración de red (JSON, SQL, etc.).
+[171] (Normal): Validación de Resultados: Evidencia de las Pruebas Técnicas realizadas (logs, capturas de funcionamiento exitoso, pruebas de conectividad).
+[172] (Normal): B. Recursos: Presentar la documentación necesaria para la sostenibilidad técnica del proyecto:
+[173] (Normal): Guía de Instalación / Configuración: Documento técnico que explique paso a paso cómo desplegar la solución en el entorno definido en la Ubicación (2.4).
+[174] (Normal): Manual de Operación Técnica: (En reemplazo del manual de usuario final para Nivel 2). Documento que explique cómo administrar o mantener la solución desde el punto de vista del equipo de TI.
+[175] (Normal): Otros Recursos: Enlaces a repositorios, librerías utilizadas o inventario de hardware necesario.
+[176] (Normal): Inventario de Datos/Activos: Una descripción de los elementos clave que intervienen en la solución (ej. tablas de datos, componentes de red o módulos de software).
+[177] (Normal): 
+[178] (Normal): 
+[179] (List Paragraph): CONCLUISIONES Y RECOMENDACIONES
+[180] (List Paragraph): 
+[181] (Normal): Conclusiones
+[182] (Normal): El participante deberá presentar las conclusiones finales, TRES como mínimo, a las que llegó después de la consideración de este proyecto.
+[183] (Normal): 
+[184] (List Paragraph): En cuanto …….
+[185] (List Paragraph): El ………
+[186] (List Paragraph): El sistema…………
+[187] (List Paragraph): El proyecto …………………..
+[188] (Normal): 
+[189] (Normal): Recomendaciones
+[190] (Normal): El participante deberá presentar recomendaciones que surgen a raíz de la elaboración de su proyecto. Estas recomendaciones pueden ser sugerencias de nuevos proyectos, sugerencias para continuar el estudio realizado, mejoras a la situación problema que ha identificado pero que no son objeto del proyecto, etc.
+[191] (Normal): Las recomendaciones deben ser DOS como mínimo.
+[192] (List Paragraph): Considerando ……………….
+[193] (List Paragraph): Se sugiere …………….
+[194] (Normal): 
+[195] (Normal): 
+[196] (Normal): 
+[197] (Heading 1): BIBLIOGRAFÍA
+[198] (Normal): 
+[199] (Normal): La bibliografía se debe realizar de acuerdo a las normas APA 7.
+[200] (Normal): 
+[201] (Heading 1): ANEXO 01 
+[202] (Normal): (Glosario de Términos, diagramas, especificaciones técnicas, etc.) 
+[203] (Title): 
